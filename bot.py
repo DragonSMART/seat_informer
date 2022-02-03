@@ -103,7 +103,6 @@ class DiscordBot(discord.Client):
 
     async def get_linked_char(self, message):
         author_id = message.author.id
-        author_id = 249208299747147776
         all_linked_char = self.database.get_linked_char(discord_id=author_id)
         linked_char = {}
         for one_char in all_linked_char:
