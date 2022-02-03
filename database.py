@@ -64,6 +64,20 @@ class MainDatabase:
         cursor.close()
         return rez
 
+    def get_pilot_pap(self, char_id, time_period):
+        sql_select = '''
+            SELECT count(*) as amout
+            FROM kassie_calendar_paps
+            WHERE
+                kassie_calendar_paps.join_time LIKE %s and
+                kassie_calendar_paps.character_id = %s
+            '''
+        cursor = self.connection.cursor()
+        cursor.execute(sql_select, (time_period + '%', char_id))
+        rez = cursor.fetchall()
+        cursor.close()
+        return rez
+
     def get_alliance_corp(self):
         sql_select = '''
             SELECT corporation_infos.corporation_id, corporation_infos.name
@@ -72,6 +86,21 @@ class MainDatabase:
             '''
         cursor = self.connection.cursor()
         cursor.execute(sql_select)
+        rez = cursor.fetchall()
+        cursor.close()
+        return rez
+
+    def get_linked_char(self, discord_id):
+        sql_select = '''
+            SELECT character_infos.character_id, character_infos.name
+            FROM seat_connector_users, refresh_tokens, character_infos
+            WHERE
+                seat_connector_users.connector_id = %s and
+                seat_connector_users.user_id = refresh_tokens.user_id and
+                refresh_tokens.character_id = character_infos.character_id
+            '''
+        cursor = self.connection.cursor()
+        cursor.execute(sql_select, (discord_id,))
         rez = cursor.fetchall()
         cursor.close()
         return rez

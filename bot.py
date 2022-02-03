@@ -25,6 +25,8 @@ class DiscordBot(discord.Client):
             await self.get_alliance_paps(message, message_text)
         elif command == '!pappilot':
             await self.get_corp_paps(message, message_text)
+        elif command == '!pap':
+            await self.get_pilot_paps(message, message_text)
 
     async def get_alliance_paps(self, message, message_text):
         if message_text == '':
@@ -64,12 +66,43 @@ class DiscordBot(discord.Client):
                                                                           amount=amount_paps)
             await message.channel.send(top_message + post_message + bottom_message)
 
+    async def get_pilot_paps(self, message, message_text):
+        if message_text == '':
+            time_period = datetime.datetime.utcnow().strftime("%Y-%m")
+        else:
+            time_period = message_text
+        top_message = f'Charaster paps: ```diff\n'
+        post_message = ''
+        bottom_message = '''```'''
+
+        all_chars = await self.get_linked_char(message)
+
+        for one_char in all_chars:
+            char_id = one_char
+            char_name = all_chars[one_char]
+            char_paps = self.database.get_pilot_pap(char_id=char_id, time_period=time_period)[0][0]
+            if char_paps == 0:
+                continue
+            post_message += '{pilot_name: <25}|{amount: >5}\n'.format(pilot_name=char_name,
+                                                                      amount=char_paps)
+        if len(post_message) == 0:
+            return await message.channel.send('Крабы не воюют :)')
+        return await message.channel.send(top_message+post_message+bottom_message)
+
     async def get_alliance_corp(self):
         alliance_corps = self.database.get_alliance_corp()
         all_corp = {}
         for one_corp in alliance_corps:
             all_corp[one_corp[0]] = one_corp[1]
         return all_corp
+
+    async def get_linked_char(self, message):
+        author_id = message.author.id
+        all_linked_char = self.database.get_linked_char(discord_id=author_id)
+        linked_char = {}
+        for one_char in all_linked_char:
+            linked_char[one_char[0]] = one_char[1]
+        return linked_char
 
 
 if __name__ == '__main__':
