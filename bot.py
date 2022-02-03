@@ -21,10 +21,12 @@ class DiscordBot(discord.Client):
         command = message.content.split(' ')[0].lower()
         message_text = message.content[len(command) + 1::]
 
-        if command == '!pap':
-            await self.get_pap(message, message_text)
+        if command == '!papcorp':
+            await self.get_alliance_paps(message, message_text)
+        elif command == '!pappilot':
+            await self.get_corp_paps(message, message_text)
 
-    async def get_pap(self, message, message_text):
+    async def get_alliance_paps(self, message, message_text):
         if message_text == '':
             time_period = datetime.datetime.utcnow().strftime("%Y-%m")
         else:
@@ -41,6 +43,33 @@ class DiscordBot(discord.Client):
         if len(post_message) == 0:
             return await message.channel.send('Крабы не воюют :)')
         return await message.channel.send(top_message + post_message + bottom_message)
+
+    async def get_corp_paps(self, message, message_text):
+        if message_text == '':
+            time_period = datetime.datetime.utcnow().strftime("%Y-%m")
+        else:
+            time_period = message_text
+        bottom_message = '''```'''
+        alliance_corps = await self.get_alliance_corp()
+        for one_corp_id, one_corp_name in alliance_corps.items():
+            top_message = f'Corporation name: {one_corp_name}```diff\n'
+            post_message = ''
+            one_corp_paps = self.database.get_corp_paps(corp_id=one_corp_id, time_period=time_period)
+            if not one_corp_paps:
+                continue
+            for one_pilot_pap in one_corp_paps:
+                pilot_name = one_pilot_pap[0]
+                amount_paps = one_pilot_pap[1]
+                post_message += '{pilot_name: <25}|{amount: >5}\n'.format(pilot_name=pilot_name,
+                                                                          amount=amount_paps)
+            await message.channel.send(top_message + post_message + bottom_message)
+
+    async def get_alliance_corp(self):
+        alliance_corps = self.database.get_alliance_corp()
+        all_corp = {}
+        for one_corp in alliance_corps:
+            all_corp[one_corp[0]] = one_corp[1]
+        return all_corp
 
 
 if __name__ == '__main__':

@@ -27,10 +27,9 @@ class MainDatabase:
             SELECT
                 corporation_infos.name, count(*) as amout
             FROM
-                kassie_calendar_paps, character_infos, corporation_members, corporation_infos
+                kassie_calendar_paps, corporation_members, corporation_infos
             WHERE
                 kassie_calendar_paps.join_time LIKE %s and
-                kassie_calendar_paps.character_id = character_infos.character_id and
                 corporation_members.character_id = kassie_calendar_paps.character_id and
                 corporation_members.corporation_id = corporation_infos.corporation_id and
                 corporation_infos.alliance_id = 99007203
@@ -39,6 +38,40 @@ class MainDatabase:
             '''
         cursor = self.connection.cursor()
         cursor.execute(sql_select, (time_period + '%',))
+        rez = cursor.fetchall()
+        cursor.close()
+        return rez
+
+    def get_corp_paps(self, corp_id, time_period):
+        sql_select = '''
+            SELECT
+                character_infos.name, count(*) as amout
+            FROM
+                kassie_calendar_paps, character_infos, corporation_members, corporation_infos
+            WHERE
+                kassie_calendar_paps.join_time LIKE %s and
+                kassie_calendar_paps.character_id = character_infos.character_id and
+                corporation_members.character_id = kassie_calendar_paps.character_id and
+                corporation_members.corporation_id = corporation_infos.corporation_id and
+                corporation_infos.corporation_id = %s
+            GROUP BY character_infos.name
+            ORDER BY amout DESC
+            LIMIT 30
+            '''
+        cursor = self.connection.cursor()
+        cursor.execute(sql_select, (time_period + '%', corp_id))
+        rez = cursor.fetchall()
+        cursor.close()
+        return rez
+
+    def get_alliance_corp(self):
+        sql_select = '''
+            SELECT corporation_infos.corporation_id, corporation_infos.name
+            FROM corporation_infos
+            WHERE corporation_infos.alliance_id = 99007203
+            '''
+        cursor = self.connection.cursor()
+        cursor.execute(sql_select)
         rez = cursor.fetchall()
         cursor.close()
         return rez
