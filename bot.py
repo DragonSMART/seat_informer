@@ -94,7 +94,7 @@ class DiscordBot(discord.Client):
             another_paps = char_paps_all - sum(detail_pap.values())
             if another_paps > 0:
                 post_message += f'other: {char_paps_all - sum(detail_pap.values())}'
-            total += sum(detail_pap.values())
+            total += char_paps_all
         if len(post_message) == 0:
             return await message.channel.send('Крабы не воюют :)')
         return await message.channel.send(top_message+post_message+bottom_message+f'Total: {total}')
@@ -108,6 +108,7 @@ class DiscordBot(discord.Client):
 
     async def get_linked_char(self, message):
         author_id = message.author.id
+        author_id = 235745139752960000
         all_linked_char = self.database.get_linked_char(discord_id=author_id)
         linked_char = {}
         for one_char in all_linked_char:
