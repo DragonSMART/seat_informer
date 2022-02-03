@@ -83,13 +83,17 @@ class DiscordBot(discord.Client):
             detail_pap = await self.get_pap_tag()
             char_id = one_char
             char_name = all_chars[one_char]
-            char_paps = self.database.get_pilot_pap(char_id=char_id, time_period=time_period)
-            if len(char_paps) == 0:
+            char_paps_tags = self.database.get_pilot_pap_tag(char_id=char_id, time_period=time_period)
+            char_paps_all = self.database.get_pilot_pap_all(char_id=char_id, time_period=time_period)[0][0]
+            if len(char_paps_tags) == 0:
                 continue
             post_message += f'{char_name} | '
-            for one_paps in char_paps:
+            for one_paps in char_paps_tags:
                 detail_pap[one_paps[0]] += one_paps[1]
                 post_message += f'{one_paps[0]}: {detail_pap[one_paps[0]]} '
+            another_paps = char_paps_all - sum(detail_pap.values())
+            if another_paps > 0:
+                post_message += f'other: {char_paps_all - sum(detail_pap.values())}'
             total += sum(detail_pap.values())
         if len(post_message) == 0:
             return await message.channel.send('Крабы не воюют :)')
