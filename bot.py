@@ -27,6 +27,8 @@ class DiscordBot(discord.Client):
             await self.get_corp_paps(message, message_text)
         elif command == '!pap':
             await self.get_pilot_paps(message, message_text)
+        elif command == '!tag':
+            await self.get_pap_tag()
 
     async def get_alliance_paps(self, message, message_text):
         if message_text == '':
@@ -78,13 +80,16 @@ class DiscordBot(discord.Client):
         all_chars = await self.get_linked_char(message)
 
         for one_char in all_chars:
+            detail_pap = await self.get_pap_tag()
             char_id = one_char
             char_name = all_chars[one_char]
-            char_paps = self.database.get_pilot_pap(char_id=char_id, time_period=time_period)[0][0]
-            if char_paps == 0:
+            char_paps = self.database.get_pilot_pap(char_id=char_id, time_period=time_period)
+            if len(char_paps) == 0:
                 continue
-            post_message += '{pilot_name: <25}|{amount: >5}\n'.format(pilot_name=char_name,
-                                                                      amount=char_paps)
+            post_message += f'{char_name} | '
+            for one_paps in char_paps:
+                detail_pap[one_paps[0]] += one_paps[1]
+                post_message += f'{one_paps[0]}: {detail_pap[one_paps[0]]} '
         if len(post_message) == 0:
             return await message.channel.send('Крабы не воюют :)')
         return await message.channel.send(top_message+post_message+bottom_message)
@@ -98,11 +103,19 @@ class DiscordBot(discord.Client):
 
     async def get_linked_char(self, message):
         author_id = message.author.id
+        author_id = 249208299747147776
         all_linked_char = self.database.get_linked_char(discord_id=author_id)
         linked_char = {}
         for one_char in all_linked_char:
             linked_char[one_char[0]] = one_char[1]
         return linked_char
+
+    async def get_pap_tag(self):
+        all_tag = self.database.get_pap_tag()
+        tags = {}
+        for one_tag in all_tag:
+            tags[one_tag[1]] = 0
+        return tags
 
 
 if __name__ == '__main__':

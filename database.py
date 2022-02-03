@@ -66,11 +66,16 @@ class MainDatabase:
 
     def get_pilot_pap(self, char_id, time_period):
         sql_select = '''
-            SELECT count(*) as amout
-            FROM kassie_calendar_paps
+            SELECT
+                calendar_tags.name, count(*)
+            FROM
+                kassie_calendar_paps, calendar_tags, calendar_tag_operation
             WHERE
                 kassie_calendar_paps.join_time LIKE %s and
+                kassie_calendar_paps.operation_id = calendar_tag_operation.operation_id and
+                calendar_tag_operation.tag_id = calendar_tags.id and
                 kassie_calendar_paps.character_id = %s
+            GROUP BY calendar_tags.name
             '''
         cursor = self.connection.cursor()
         cursor.execute(sql_select, (time_period + '%', char_id))
@@ -101,6 +106,16 @@ class MainDatabase:
             '''
         cursor = self.connection.cursor()
         cursor.execute(sql_select, (discord_id,))
+        rez = cursor.fetchall()
+        cursor.close()
+        return rez
+
+    def get_pap_tag(self):
+        sql_select = '''
+            SELECT * FROM calendar_tags
+        '''
+        cursor = self.connection.cursor()
+        cursor.execute(sql_select)
         rez = cursor.fetchall()
         cursor.close()
         return rez
