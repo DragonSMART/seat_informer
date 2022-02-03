@@ -78,7 +78,7 @@ class DiscordBot(discord.Client):
         bottom_message = '''```'''
 
         all_chars = await self.get_linked_char(message)
-
+        total = 0
         for one_char in all_chars:
             detail_pap = await self.get_pap_tag()
             char_id = one_char
@@ -90,9 +90,10 @@ class DiscordBot(discord.Client):
             for one_paps in char_paps:
                 detail_pap[one_paps[0]] += one_paps[1]
                 post_message += f'{one_paps[0]}: {detail_pap[one_paps[0]]} '
+            total += sum(detail_pap.values())
         if len(post_message) == 0:
             return await message.channel.send('Крабы не воюют :)')
-        return await message.channel.send(top_message+post_message+bottom_message)
+        return await message.channel.send(top_message+post_message+bottom_message+f'Total: {total}')
 
     async def get_alliance_corp(self):
         alliance_corps = self.database.get_alliance_corp()
