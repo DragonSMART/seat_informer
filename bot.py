@@ -73,7 +73,7 @@ class DiscordBot(discord.Client):
             time_period = datetime.datetime.utcnow().strftime("%Y-%m")
         else:
             time_period = message_text
-        top_message = f'Charaster paps: ```diff\n'
+        top_message = f'Charaсter paps: ```diff\n'
         post_message = ''
         bottom_message = '''```'''
 
@@ -108,7 +108,6 @@ class DiscordBot(discord.Client):
 
     async def get_linked_char(self, message):
         author_id = message.author.id
-        author_id = 235745139752960000
         all_linked_char = self.database.get_linked_char(discord_id=author_id)
         linked_char = {}
         for one_char in all_linked_char:
