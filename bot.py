@@ -35,7 +35,7 @@ class DiscordBot(discord.Client):
             time_period = datetime.datetime.utcnow().strftime("%Y-%m")
         else:
             time_period = message_text
-        all_paps = self.database.get_paps(time_period)
+        all_paps = self.database.get_alliance_paps(time_period)
         top_message = '```diff\n'
         bottom_message = '''```'''
         post_message = ''
@@ -95,9 +95,10 @@ class DiscordBot(discord.Client):
             if another_paps > 0:
                 post_message += f'other: {char_paps_all - sum(detail_pap.values())}'
             total += char_paps_all
+        await message.delete()
         if len(post_message) == 0:
-            return await message.channel.send('Крабы не воюют :)')
-        return await message.channel.send(top_message+post_message+bottom_message+f'Total: {total}')
+            return await message.author.send('Крабы не воюют :)')
+        return await message.author.send(top_message+post_message+bottom_message+f'Total: {total}')
 
     async def get_alliance_corp(self):
         alliance_corps = self.database.get_alliance_corp()

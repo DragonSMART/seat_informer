@@ -22,7 +22,7 @@ class MainDatabase:
         except Error as err:
             print(err)
 
-    def get_paps(self, time_period):
+    def get_alliance_paps(self, time_period):
         sql_select = '''
             SELECT
                 corporation_infos.name, count(*) as amout
