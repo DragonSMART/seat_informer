@@ -73,7 +73,7 @@ class DiscordBot(discord.Client):
             time_period = datetime.datetime.utcnow().strftime("%Y-%m")
         else:
             time_period = message_text
-        top_message = f'Charaсter paps: ```diff\n'
+        top_message = f'Charaсter paps: ```diff'
         post_message = ''
         bottom_message = '''```'''
 
@@ -87,7 +87,7 @@ class DiscordBot(discord.Client):
             char_paps_all = self.database.get_pilot_pap_all(char_id=char_id, time_period=time_period)[0][0]
             if len(char_paps_tags) == 0:
                 continue
-            post_message += f'{char_name} | '
+            post_message += f'\n{char_name} | '
             for one_paps in char_paps_tags:
                 detail_pap[one_paps[0]] += one_paps[1]
                 post_message += f'{one_paps[0]}: {detail_pap[one_paps[0]]} '
