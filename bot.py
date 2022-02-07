@@ -31,6 +31,7 @@ class DiscordBot(discord.Client):
             await self.get_pap_tag()
 
     async def get_alliance_paps(self, message, message_text):
+        self.database.check_connect_database()
         if message_text == '':
             time_period = datetime.datetime.utcnow().strftime("%Y-%m")
         else:
@@ -49,6 +50,7 @@ class DiscordBot(discord.Client):
         return await message.channel.send(top_message + post_message + bottom_message)
 
     async def get_corp_paps(self, message, message_text):
+        self.database.check_connect_database()
         if message_text == '':
             time_period = datetime.datetime.utcnow().strftime("%Y-%m")
         else:
@@ -69,6 +71,7 @@ class DiscordBot(discord.Client):
             await message.channel.send(top_message + post_message + bottom_message)
 
     async def get_pilot_paps(self, message, message_text):
+        self.database.check_connect_database()
         if message_text == '':
             time_period = datetime.datetime.utcnow().strftime("%Y-%m")
         else:
@@ -95,7 +98,8 @@ class DiscordBot(discord.Client):
             if another_paps > 0:
                 post_message += f'other: {char_paps_all - sum(detail_pap.values())}'
             total += char_paps_all
-        await message.delete()
+        if not str(message.channel).startswith('Direct Message with'):
+            await message.delete()
         if len(post_message) == 0:
             return await message.author.send('Крабы не воюют :)')
         return await message.author.send(top_message+post_message+bottom_message+f'Total: {total}')

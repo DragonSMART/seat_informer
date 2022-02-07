@@ -22,6 +22,11 @@ class MainDatabase:
         except Error as err:
             print(err)
 
+    def check_connect_database(self):
+        if not self.connection.is_connected():
+            return self.init_database()
+        return
+
     def get_alliance_paps(self, time_period):
         sql_select = '''
             SELECT
