@@ -31,7 +31,6 @@ class DiscordBot(discord.Client):
             await self.get_pap_tag()
 
     async def get_alliance_paps(self, message, message_text):
-        self.database.check_connect_database()
         if message_text == '':
             time_period = datetime.datetime.utcnow().strftime("%Y-%m")
         else:
@@ -50,7 +49,6 @@ class DiscordBot(discord.Client):
         return await message.channel.send(top_message + post_message + bottom_message)
 
     async def get_corp_paps(self, message, message_text):
-        self.database.check_connect_database()
         if message_text == '':
             time_period = datetime.datetime.utcnow().strftime("%Y-%m")
         else:
@@ -64,14 +62,21 @@ class DiscordBot(discord.Client):
             if not one_corp_paps:
                 continue
             for one_pilot_pap in one_corp_paps:
-                pilot_name = one_pilot_pap[0]
-                amount_paps = one_pilot_pap[1]
-                post_message += '{pilot_name: <25}|{amount: >5}\n'.format(pilot_name=pilot_name,
-                                                                          amount=amount_paps)
+                pilot_name = one_pilot_pap[1]
+                total_paps = one_pilot_pap[2]
+                post_message += '{pilot_name: <25}|{total: >3}|'.format(pilot_name=pilot_name,
+                                                                        total=total_paps)
+                detail_pap = await self.get_pap_tag()
+                pilot_pap_tags = self.database.get_pilot_pap_tag(char_id=one_pilot_pap[0], time_period=time_period)
+                for one_pilot_tag in pilot_pap_tags:
+                    detail_pap[one_pilot_tag[0]] += one_pilot_tag[1]
+                for one_detail_pap in detail_pap:
+                    post_message += f' {one_detail_pap}: {detail_pap[one_detail_pap]} '
+                post_message += f'other: {total_paps - sum(detail_pap.values())}\n'
+            print(post_message)
             await message.channel.send(top_message + post_message + bottom_message)
 
     async def get_pilot_paps(self, message, message_text):
-        self.database.check_connect_database()
         if message_text == '':
             time_period = datetime.datetime.utcnow().strftime("%Y-%m")
         else:
@@ -102,7 +107,7 @@ class DiscordBot(discord.Client):
             await message.delete()
         if len(post_message) == 0:
             return await message.author.send('Крабы не воюют :)')
-        return await message.author.send(top_message+post_message+bottom_message+f'Total: {total}')
+        return await message.author.send(top_message + post_message + bottom_message + f'Total: {total}')
 
     async def get_alliance_corp(self):
         alliance_corps = self.database.get_alliance_corp()

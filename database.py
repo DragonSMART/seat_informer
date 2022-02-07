@@ -22,10 +22,10 @@ class MainDatabase:
         except Error as err:
             print(err)
 
-    def check_connect_database(self):
+    def get_cursor(self):
         if not self.connection.is_connected():
             return self.init_database()
-        return
+        return self.connection.cursor()
 
     def get_alliance_paps(self, time_period):
         sql_select = '''
@@ -41,7 +41,7 @@ class MainDatabase:
             GROUP BY corporation_infos.name
             ORDER BY amout DESC
             '''
-        cursor = self.connection.cursor()
+        cursor = self.get_cursor()
         cursor.execute(sql_select, (time_period + '%',))
         rez = cursor.fetchall()
         cursor.close()
@@ -50,7 +50,7 @@ class MainDatabase:
     def get_corp_paps(self, corp_id, time_period):
         sql_select = '''
             SELECT
-                character_infos.name, count(*) as amout
+                character_infos.character_id, character_infos.name, count(*) as amout
             FROM
                 kassie_calendar_paps, character_infos, corporation_members, corporation_infos
             WHERE
@@ -61,9 +61,9 @@ class MainDatabase:
                 corporation_infos.corporation_id = %s
             GROUP BY character_infos.name
             ORDER BY amout DESC
-            LIMIT 30
+            LIMIT 20
             '''
-        cursor = self.connection.cursor()
+        cursor = self.get_cursor()
         cursor.execute(sql_select, (time_period + '%', corp_id))
         rez = cursor.fetchall()
         cursor.close()
@@ -82,7 +82,7 @@ class MainDatabase:
                 kassie_calendar_paps.character_id = %s
             GROUP BY calendar_tags.name
             '''
-        cursor = self.connection.cursor()
+        cursor = self.get_cursor()
         cursor.execute(sql_select, (time_period + '%', char_id))
         rez = cursor.fetchall()
         cursor.close()
@@ -96,7 +96,7 @@ class MainDatabase:
                 kassie_calendar_paps.join_time LIKE %s and
                 kassie_calendar_paps.character_id = %s
             '''
-        cursor = self.connection.cursor()
+        cursor = self.get_cursor()
         cursor.execute(sql_select, (time_period + '%', char_id))
         rez = cursor.fetchall()
         cursor.close()
@@ -108,7 +108,7 @@ class MainDatabase:
             FROM corporation_infos
             WHERE corporation_infos.alliance_id = 99007203
             '''
-        cursor = self.connection.cursor()
+        cursor = self.get_cursor()
         cursor.execute(sql_select)
         rez = cursor.fetchall()
         cursor.close()
@@ -123,7 +123,7 @@ class MainDatabase:
                 seat_connector_users.user_id = refresh_tokens.user_id and
                 refresh_tokens.character_id = character_infos.character_id
             '''
-        cursor = self.connection.cursor()
+        cursor = self.get_cursor()
         cursor.execute(sql_select, (discord_id,))
         rez = cursor.fetchall()
         cursor.close()
@@ -133,7 +133,7 @@ class MainDatabase:
         sql_select = '''
             SELECT * FROM calendar_tags
         '''
-        cursor = self.connection.cursor()
+        cursor = self.get_cursor()
         cursor.execute(sql_select)
         rez = cursor.fetchall()
         cursor.close()
