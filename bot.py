@@ -10,6 +10,7 @@ class DiscordBot(discord.Client):
         self.command_prefix = '!'
         self.database = database.MainDatabase()
 
+
     async def on_ready(self):
         print('Bot starting!')
 
@@ -21,14 +22,12 @@ class DiscordBot(discord.Client):
         command = message.content.split(' ')[0].lower()
         message_text = message.content[len(command) + 1::]
 
-        if command == '!papcorp':
+        if command == '!papcorp' and await self.check_access(message):
             await self.get_alliance_paps(message, message_text)
-        elif command == '!pappilot':
+        elif command == '!pappilot' and await self.check_access(message):
             await self.get_corp_paps(message, message_text)
-        elif command == '!pap':
+        elif command == '!pap' and await self.check_access(message):
             await self.get_pilot_paps(message, message_text)
-        elif command == '!tag':
-            await self.get_pap_tag()
 
     async def get_alliance_paps(self, message, message_text):
         if message_text == '':
@@ -73,7 +72,6 @@ class DiscordBot(discord.Client):
                 for one_detail_pap in detail_pap:
                     post_message += f' {one_detail_pap}: {detail_pap[one_detail_pap]} '
                 post_message += f'other: {total_paps - sum(detail_pap.values())}\n'
-            print(post_message)
             await message.channel.send(top_message + post_message + bottom_message)
 
     async def get_pilot_paps(self, message, message_text):
@@ -130,6 +128,27 @@ class DiscordBot(discord.Client):
         for one_tag in all_tag:
             tags[one_tag[1]] = 0
         return tags
+
+    async def get_discord_user_role(self, message):
+        discord_user_id = message.author.id
+        temp_all_roles = self.database.get_discord_user_role(discord_id=discord_user_id)
+        user_roles = []
+        for one_role in temp_all_roles:
+            user_roles.append(one_role[0])
+        return user_roles
+
+    async def check_access(self, message):
+        command = message.content.split(' ')[0].lower()[1::]
+        discord_user_id = message.author.id
+        command_access = [one_role.strip().lower() for one_role in config_bot['COMMANDS'][command].split(',')]
+        if 'all' in command_access:
+            return True
+
+        all_user_role = await self.get_discord_user_role(message)
+        for one_role in all_user_role:
+            if str(one_role).lower() in command_access:
+                return True
+        return False
 
 
 if __name__ == '__main__':

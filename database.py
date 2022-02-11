@@ -138,3 +138,18 @@ class MainDatabase:
         rez = cursor.fetchall()
         cursor.close()
         return rez
+
+    def get_discord_user_role(self, discord_id):
+        sql_select = '''
+            SELECT roles.title
+            FROM seat_connector_users, role_user, roles
+            WHERE
+                seat_connector_users.connector_id = %s and
+                seat_connector_users.user_id = role_user.user_id and
+                roles.id = role_user.role_id
+            '''
+        cursor = self.get_cursor()
+        cursor.execute(sql_select, (discord_id,))
+        rez = cursor.fetchall()
+        cursor.close()
+        return rez
