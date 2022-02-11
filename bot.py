@@ -64,6 +64,7 @@ class DiscordBot(discord.Client):
         bottom_message = '''```'''
         alliance_corps = await self.get_alliance_corp()
         all_tag_pap = await self.get_pap_tag()
+
         for one_corp_id, one_corp_name in alliance_corps.items():
             top_message = f'Corporation name: {one_corp_name}```diff\n'
             post_message = ''
