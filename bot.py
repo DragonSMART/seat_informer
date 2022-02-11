@@ -38,11 +38,20 @@ class DiscordBot(discord.Client):
         top_message = '```diff\n'
         bottom_message = '''```'''
         post_message = ''
+        all_tags_pap = await self.get_pap_tag()
         for one_pap in all_paps:
-            corp_name = one_pap[0]
-            amount_paps = one_pap[1]
-            post_message += '{corp_name: <25}|{amount: >5}\n'.format(corp_name=corp_name,
-                                                                     amount=amount_paps)
+            corp_name = one_pap[1]
+            total_paps = one_pap[2]
+            post_message += '{corp_name: <25}|{total: >5}|'.format(corp_name=corp_name,
+                                                                    total=total_paps)
+            one_corp_paps = self.database.get_corp_paps_tag(corp_id=one_pap[0], time_period=time_period)
+            detail_pap = all_tags_pap.copy()
+            for one_corp_tag in one_corp_paps:
+                detail_pap[one_corp_tag[0]] += one_corp_tag[1]
+            for one_tag in detail_pap:
+                post_message += f' {one_tag}: {detail_pap[one_tag]} '
+            post_message += f'other: {total_paps - sum(detail_pap.values())}\n'
+
         if len(post_message) == 0:
             return await message.channel.send('Крабы не воюют :)')
         return await message.channel.send(top_message + post_message + bottom_message)
@@ -54,10 +63,11 @@ class DiscordBot(discord.Client):
             time_period = message_text
         bottom_message = '''```'''
         alliance_corps = await self.get_alliance_corp()
+        all_tag_pap = await self.get_pap_tag()
         for one_corp_id, one_corp_name in alliance_corps.items():
             top_message = f'Corporation name: {one_corp_name}```diff\n'
             post_message = ''
-            one_corp_paps = self.database.get_corp_paps(corp_id=one_corp_id, time_period=time_period)
+            one_corp_paps = self.database.get_corp_paps_all(corp_id=one_corp_id, time_period=time_period)
             if not one_corp_paps:
                 continue
             for one_pilot_pap in one_corp_paps:
@@ -65,7 +75,7 @@ class DiscordBot(discord.Client):
                 total_paps = one_pilot_pap[2]
                 post_message += '{pilot_name: <25}|{total: >3}|'.format(pilot_name=pilot_name,
                                                                         total=total_paps)
-                detail_pap = await self.get_pap_tag()
+                detail_pap = all_tag_pap.copy()
                 pilot_pap_tags = self.database.get_pilot_pap_tag(char_id=one_pilot_pap[0], time_period=time_period)
                 for one_pilot_tag in pilot_pap_tags:
                     detail_pap[one_pilot_tag[0]] += one_pilot_tag[1]
@@ -79,14 +89,17 @@ class DiscordBot(discord.Client):
             time_period = datetime.datetime.utcnow().strftime("%Y-%m")
         else:
             time_period = message_text
+
         top_message = f'Charaсter paps: ```diff'
         post_message = ''
         bottom_message = '''```'''
 
         all_chars = await self.get_linked_char(message)
         total = 0
+        all_tag_pap = await self.get_pap_tag()
+
         for one_char in all_chars:
-            detail_pap = await self.get_pap_tag()
+            detail_pap = all_tag_pap.copy()
             char_id = one_char
             char_name = all_chars[one_char]
             char_paps_tags = self.database.get_pilot_pap_tag(char_id=char_id, time_period=time_period)

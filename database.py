@@ -30,7 +30,7 @@ class MainDatabase:
     def get_alliance_paps(self, time_period):
         sql_select = '''
             SELECT
-                corporation_infos.name, count(*) as amout
+                corporation_infos.corporation_id, corporation_infos.name, count(*) as amout
             FROM
                 kassie_calendar_paps, corporation_members, corporation_infos
             WHERE
@@ -47,7 +47,27 @@ class MainDatabase:
         cursor.close()
         return rez
 
-    def get_corp_paps(self, corp_id, time_period):
+    def get_corp_paps_tag(self, corp_id, time_period):
+        sql_select = '''
+            SELECT calendar_tags.name, count(*)
+            FROM kassie_calendar_paps, corporation_members, corporation_infos, calendar_tags, calendar_tag_operation
+            WHERE
+                kassie_calendar_paps.join_time LIKE %s and
+                kassie_calendar_paps.operation_id = calendar_tag_operation.operation_id and
+                calendar_tag_operation.tag_id = calendar_tags.id and
+                corporation_members.character_id = kassie_calendar_paps.character_id and
+                corporation_members.corporation_id = corporation_infos.corporation_id and
+                corporation_infos.alliance_id = 99007203 and
+                corporation_infos.corporation_id = %s
+            GROUP BY calendar_tags.name
+            '''
+        cursor = self.get_cursor()
+        cursor.execute(sql_select, (time_period + '%', corp_id))
+        rez = cursor.fetchall()
+        cursor.close()
+        return rez
+
+    def get_corp_paps_all(self, corp_id, time_period):
         sql_select = '''
             SELECT
                 character_infos.character_id, character_infos.name, count(*) as amout
