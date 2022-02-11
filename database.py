@@ -91,10 +91,8 @@ class MainDatabase:
 
     def get_pilot_pap_tag(self, char_id, time_period):
         sql_select = '''
-            SELECT
-                calendar_tags.name, count(*)
-            FROM
-                kassie_calendar_paps, calendar_tags, calendar_tag_operation
+            SELECT calendar_tags.name, count(*)
+            FROM kassie_calendar_paps, calendar_tags, calendar_tag_operation
             WHERE
                 kassie_calendar_paps.join_time LIKE %s and
                 kassie_calendar_paps.operation_id = calendar_tag_operation.operation_id and
@@ -173,3 +171,38 @@ class MainDatabase:
         rez = cursor.fetchall()
         cursor.close()
         return rez
+
+    def get_fcpap_all(self, time_period):
+        sql_select = '''
+            SELECT users.main_character_id, users.name, count(*)
+            FROM users, calendar_operations
+            WHERE 
+                calendar_operations.user_id = users.id and
+                calendar_operations.start_at LIKE %s
+            GROUP BY users.name
+            '''
+        cursor = self.get_cursor()
+        cursor.execute(sql_select, (time_period + '%',))
+        rez = cursor.fetchall()
+        cursor.close()
+        return rez
+
+    def get_fcpap_tag(self, char_id, time_period):
+        sql_select = '''
+            SELECT calendar_tags.name, count(*)
+            FROM users, calendar_operations, calendar_tag_operation, calendar_tags
+            WHERE 
+                calendar_operations.user_id = users.id and
+                calendar_tag_operation.operation_id = calendar_operations.id and
+                calendar_tags.id = calendar_tag_operation.tag_id and
+                calendar_operations.start_at LIKE %s and
+                users.main_character_id = %s
+            GROUP BY calendar_tags.name
+            '''
+        cursor = self.get_cursor()
+        cursor.execute(sql_select, (time_period + '%', char_id))
+        rez = cursor.fetchall()
+        cursor.close()
+        return rez
+
+

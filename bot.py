@@ -28,6 +28,9 @@ class DiscordBot(discord.Client):
             await self.get_corp_paps(message, message_text)
         elif command == '!pap' and await self.check_access(message):
             await self.get_pilot_paps(message, message_text)
+        elif command == '!papfc' and await self.check_access(message):
+            await self.get_papfc(message, message_text)
+
 
     async def get_alliance_paps(self, message, message_text):
         if message_text == '':
@@ -120,6 +123,35 @@ class DiscordBot(discord.Client):
         if len(post_message) == 0:
             return await message.author.send('Крабы не воюют :)')
         return await message.author.send(top_message + post_message + bottom_message + f'Total: {total}')
+
+    async def get_papfc(self, message, message_text):
+        if message_text == '':
+            time_period = datetime.datetime.utcnow().strftime("%Y-%m")
+        else:
+            time_period = message_text
+
+        top_message = '```diff'
+        bottom_message = '''```'''
+        post_message = ''
+
+        all_papfc = self.database.get_fcpap_all(time_period=time_period)
+
+        all_tag_pap = await self.get_pap_tag()
+        for one_papfc in all_papfc:
+            fc_name = one_papfc[1]
+            total_paps = one_papfc[2]
+            post_message += '\n{fc_name: <15} | {total_paps: >5} | '.format(fc_name=fc_name, total_paps=total_paps)
+            detail_pap = all_tag_pap.copy()
+            fcpap_tags = self.database.get_fcpap_tag(char_id=one_papfc[0], time_period=time_period)
+            for one_fcpap_tag in fcpap_tags:
+                detail_pap[one_fcpap_tag[0]] += one_fcpap_tag[1]
+            for one_detail_pap in detail_pap:
+                if detail_pap[one_detail_pap] > 0:
+                    post_message += f'{one_detail_pap} : {detail_pap[one_detail_pap]} '
+            other_pap = total_paps - sum(detail_pap.values())
+            if other_pap > 0:
+                post_message += f'other: {other_pap}'
+        return await message.channel.send(top_message + post_message + bottom_message)
 
     async def get_alliance_corp(self):
         alliance_corps = self.database.get_alliance_corp()
