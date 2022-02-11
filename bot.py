@@ -51,7 +51,7 @@ class DiscordBot(discord.Client):
             for one_tag in detail_pap:
                 post_message += f' {one_tag}: {detail_pap[one_tag]} '
             post_message += f'other: {total_paps - sum(detail_pap.values())}\n'
-
+ё
         if len(post_message) == 0:
             return await message.channel.send('Крабы не воюют :)')
         return await message.channel.send(top_message + post_message + bottom_message)
