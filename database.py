@@ -24,7 +24,7 @@ class MainDatabase:
 
     def get_cursor(self):
         if not self.connection.is_connected():
-            return self.init_database()
+            self.init_database()
         return self.connection.cursor()
 
     def get_alliance_paps(self, time_period):
