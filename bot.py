@@ -64,8 +64,8 @@ class DiscordBot(discord.Client):
         need_corp_id = None
         need_corp_name = None
 
-        if self.database.get_corp_ticker(corp_ticker=extra_command[0].uppper()):
-            temp_corp_info = self.database.get_corp_ticker(corp_ticker=extra_command[0])
+        if self.database.get_corp_ticker(corp_ticker=str(extra_command[0]).upper()):
+            temp_corp_info = self.database.get_corp_ticker(corp_ticker=str(extra_command[0]).upper())
             need_corp_id = int(temp_corp_info[0])
             need_corp_name = temp_corp_info[1]
 
