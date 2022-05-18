@@ -205,4 +205,16 @@ class MainDatabase:
         cursor.close()
         return rez
 
+    def get_corp_ticker(self, corp_ticker):
+        sql_select = '''
+            SELECT *
+            FROM corporation_infos
+            WHERE ticker = %s
+        '''
+        cursor = self.get_cursor()
+        cursor.execute(sql_select, (corp_ticker,))
+        rez = cursor.fetchone()
+        cursor.close()
+        return rez
+
 

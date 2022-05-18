@@ -60,12 +60,27 @@ class DiscordBot(discord.Client):
         return await message.channel.send(top_message + post_message + bottom_message)
 
     async def get_corp_paps(self, message, message_text):
-        if message_text == '':
+        extra_command = message_text.split(' ')
+        need_corp_id = None
+        need_corp_name = None
+
+        if self.database.get_corp_ticker(corp_ticker=extra_command[0]):
+            temp_corp_info = self.database.get_corp_ticker(corp_ticker=extra_command[0])
+            need_corp_id = int(temp_corp_info[0])
+            need_corp_name = temp_corp_info[1]
+
+        if (message_text == '' and need_corp_id is None) or (need_corp_id and len(extra_command) == 1):
             time_period = datetime.datetime.utcnow().strftime("%Y-%m")
+        elif need_corp_id and len(extra_command) == 2:
+            time_period = extra_command[1]
         else:
             time_period = message_text
+
         bottom_message = '''```'''
-        alliance_corps = await self.get_alliance_corp()
+        if need_corp_id:
+            alliance_corps = {need_corp_id : need_corp_name}
+        else:
+            alliance_corps = await self.get_alliance_corp()
         all_tag_pap = await self.get_pap_tag()
 
         for one_corp_id, one_corp_name in alliance_corps.items():
@@ -78,7 +93,7 @@ class DiscordBot(discord.Client):
             for one_pilot_pap in one_corp_paps:
                 pilot_name = one_pilot_pap[1]
                 total_paps = one_pilot_pap[2]
-                post_message += '{pilot_name: <25}|{total: >3}|'.format(pilot_name=pilot_name,
+                new_post_message += '{pilot_name: <25}|{total: >3}|'.format(pilot_name=pilot_name,
                                                                         total=total_paps)
                 detail_pap = all_tag_pap.copy()
                 pilot_pap_tags = self.database.get_pilot_pap_tag(char_id=one_pilot_pap[0], time_period=time_period)
@@ -92,7 +107,9 @@ class DiscordBot(discord.Client):
                 if len(post_message) + len(new_post_message) > 1800:
                     await message.channel.send(top_message + post_message + bottom_message)
                     post_message = new_post_message
-
+                else:
+                    post_message += new_post_message
+                new_post_message = ''
             await message.channel.send(top_message + post_message + bottom_message)
 
     async def get_pilot_paps(self, message, message_text):
