@@ -71,6 +71,7 @@ class DiscordBot(discord.Client):
         for one_corp_id, one_corp_name in alliance_corps.items():
             top_message = f'Corporation name: {one_corp_name}```diff\n'
             post_message = ''
+            new_post_message = ''
             one_corp_paps = self.database.get_corp_paps_all(corp_id=one_corp_id, time_period=time_period)
             if not one_corp_paps:
                 continue
@@ -83,9 +84,15 @@ class DiscordBot(discord.Client):
                 pilot_pap_tags = self.database.get_pilot_pap_tag(char_id=one_pilot_pap[0], time_period=time_period)
                 for one_pilot_tag in pilot_pap_tags:
                     detail_pap[one_pilot_tag[0]] += one_pilot_tag[1]
+
                 for one_detail_pap in detail_pap:
-                    post_message += f' {one_detail_pap}: {detail_pap[one_detail_pap]} '
-                post_message += f'other: {total_paps - sum(detail_pap.values())}\n'
+                    new_post_message += f' {one_detail_pap}: {detail_pap[one_detail_pap]} '
+                new_post_message += f'other: {total_paps - sum(detail_pap.values())}\n'
+
+                if len(post_message) + len(new_post_message) > 1800:
+                    await message.channel.send(top_message + post_message + bottom_message)
+                    post_message = new_post_message
+
             await message.channel.send(top_message + post_message + bottom_message)
 
     async def get_pilot_paps(self, message, message_text):
