@@ -236,7 +236,7 @@ class DiscordBot(discord.Client):
             one_charaster_name = one_charaster[0]
             one_charaster_count = one_charaster[1]
             one_charaster_persent = round(one_charaster_count * 100 / summ_all_ten, 1)
-            post_message += f'{one_charaster_name: <20} | {one_charaster_persent: >4} |\n'
+            post_message += f'{one_charaster_name: <20} | {one_charaster_persent: >4}% |\n'
         channel = bot.get_channel(876816746575708170)
         await channel.send('```' + post_message + '```')
 

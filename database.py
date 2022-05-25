@@ -228,7 +228,7 @@ class MainDatabase:
                 corporation_wallet_journals.second_party_id = character_infos.character_id
             GROUP BY character_infos.name
             ORDER BY total DESC 
-            LIMIT 15  
+            LIMIT 20  
             '''
         cursor = self.get_cursor()
         cursor.execute(sql_select, (time_period + '%',))
