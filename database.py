@@ -210,10 +210,29 @@ class MainDatabase:
             SELECT *
             FROM corporation_infos
             WHERE ticker = %s
-        '''
+            '''
         cursor = self.get_cursor()
         cursor.execute(sql_select, (corp_ticker,))
         rez = cursor.fetchone()
+        cursor.close()
+        return rez
+
+    def get_ten(self, time_period):
+        sql_select = '''
+            SELECT character_infos.name, count(*) as total
+            FROM corporation_wallet_journals, character_infos
+            WHERE 
+                corporation_wallet_journals.date LIKE %s and
+                corporation_wallet_journals.corporation_id = 98427812 and
+                corporation_wallet_journals.reason LIKE '%25559: 1%' and
+                corporation_wallet_journals.second_party_id = character_infos.character_id
+            GROUP BY character_infos.name
+            ORDER BY total DESC 
+            LIMIT 15  
+            '''
+        cursor = self.get_cursor()
+        cursor.execute(sql_select, (time_period + '%',))
+        rez = cursor.fetchall()
         cursor.close()
         return rez
 

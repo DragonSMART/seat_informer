@@ -12,7 +12,7 @@ class DiscordBot(discord.Client):
 
 
     async def on_ready(self):
-        print('Bot starting!')
+        print(f'Bot starting! {self.user}')
 
     async def on_message(self, message):
         if not message.content.startswith(self.command_prefix) or len(message.content) == 1:
@@ -30,6 +30,8 @@ class DiscordBot(discord.Client):
             await self.get_pilot_paps(message, message_text)
         elif command == '!papfc' and await self.check_access(message):
             await self.get_papfc(message, message_text)
+        elif command == '!10' and await self.check_access(message):
+            await self.get_ten(message, message_text)
 
 
     async def get_alliance_paps(self, message, message_text):
@@ -219,6 +221,24 @@ class DiscordBot(discord.Client):
             if str(one_role).lower() in command_access:
                 return True
         return False
+
+    async def get_ten(self, message, message_text):
+        if message_text == '':
+            time_period = datetime.datetime.utcnow().strftime("%Y-%m")
+        else:
+            time_period = message_text
+
+        post_message = ''
+
+        all_charaster_ten = self.database.get_ten(time_period=time_period)
+        summ_all_ten = sum([x for x in (one_charaster[1] for one_charaster in all_charaster_ten)])
+        for one_charaster in all_charaster_ten:
+            one_charaster_name = one_charaster[0]
+            one_charaster_count = one_charaster[1]
+            one_charaster_persent = round(one_charaster_count * 100 / summ_all_ten, 1)
+            post_message += f'{one_charaster_name: <20} | {one_charaster_persent: >4} |\n'
+        channel = bot.get_channel(876816746575708170)
+        await channel.send('```' + post_message + '```')
 
 
 if __name__ == '__main__':
